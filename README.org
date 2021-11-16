@@ -1,0 +1,141 @@
+#+TITLE: Geo Location Link Type in Org-mode
+
+This emacs lisp code adds geo location (latitude / longitude) link type to org-mode.
+
+* Setup
+
+#+begin_src elisp
+(with-eval-after-load "org"
+  (require 'org-geolink))
+#+end_src
+
+Customize default map service as you like:
+- [[#org-geolink-map-service-default][~org-geolink-map-service-default~]]
+- [[#org-geolink-map-services-user][~org-geolink-map-services-user~]]
+
+* Link Notation Examples
+
+#+begin_src org
+- [​[geo:36.2893,137.64785]]
+- [​[geo:36.2893,137.64785;z=18]]
+- [​[geo:36.2893,137.64785][Oku-hotaka-dake]]
+#+end_src
+
+When exporting as HTML, the output is as follows:
+
+#+begin_src html
+<ul class="org-ul">
+<li><a href="https://www.openstreetmap.org/#map=15/36.2893/137.64785" target="_blank" rel="noopener" data-geolink="36.2893,137.64785">36.2893,137.64785</a></li>
+<li><a href="https://www.openstreetmap.org/#map=18/36.2893/137.64785" target="_blank" rel="noopener" data-geolink="36.2893,137.64785;z=18">36.2893,137.64785</a></li>
+<li><a href="https://www.openstreetmap.org/#map=15/36.2893/137.64785" target="_blank" rel="noopener" data-geolink="36.2893,137.64785">Oku-hotaka-dake</a></li>
+</ul>
+#+end_src
+
+The syntax of the path part is the same as the geo URI Scheme ([[https://www.rfc-editor.org/rfc/rfc5870.txt][rfc5870]], [[https://en.wikipedia.org/wiki/Geo_URI_scheme][Wikipedia]]). However, CRS conversion is not supported.
+
+More Examples:
+
+[[https://raw.githubusercontent.com/misohena/org-geolink/master/example.org]]
+
+* Open Link by Browser
+Type =C-c C-o= on geo link.
+
+* Customize HTML Export
+** Template Notation
+- ~{{{PATH}}}~ :: Original path string.
+- ~{{{CONTENTS}}}~ :: Description of link or result of expanding [[#org-geolink-contents-template][~org-geolink-contents-template~]].
+- ~{{{URL}}}~ :: Result of expanding [[#org-geolink-url-template][~org-geolink-url-template~]].
+- ~{{{1}}}~ :: First coordinate number (Latitude).
+- ~{{{2}}}~ :: Second coordinate number (Longitude).
+- ~{{{3}}}~ :: Third coordinate number (Optional).
+- ~{{{~ /pname/ ~}}}~ :: Value of link parameter ( ; /pname/ = /pvalue/ ).
+- ~{{{~ /pname/ ~:~ /fmt/ ~}}}~ :: ~(if pvalue (format fmt pvalue) "")~.
+
+** Variable: ~org-geolink-html-template~
+:PROPERTIES:
+:CUSTOM_ID: org-geolink-html-template
+:END:
+
+Template to use when creating a link HTML.
+
+- Default :: ~<a href="{{{URL}}}" target="_blank" rel="noopener" data-geolink="{{{PATH}}}">{{{CONTENTS}}}</a>~
+- In-Buffer Setting :: ~#+GEOLINK_HTML_TEMPLATE:~ /string/
+
+** Variable: ~org-geolink-contents-template~
+:PROPERTIES:
+:CUSTOM_ID: org-geolink-contents-template
+:END:
+
+Link text to use if no description is specified.
+
+- Default :: ~"{{{1}}},{{{2}}}"~
+- In-Buffer Setting :: ~#+GEOLINK_CONTENTS_TEMPLATE:~ /string/
+
+** Variable: ~org-geolink-url-template~
+:PROPERTIES:
+:CUSTOM_ID: org-geolink-url-template
+:END:
+
+Template to use when creating a URL.
+
+Specify in a format like ~"https://www.openstreetmap.org/#map={{{z}}}/{{{1}}}/{{{2}}}"~ .
+
+nil means to use the default map service.
+
+- Default :: nil (Use ~org-geolink-map-service-default~ )
+
+** Variable: ~org-geolink-map-service-default~
+:PROPERTIES:
+:CUSTOM_ID: org-geolink-map-service-default
+:END:
+
+Default map service. Specify ID symbol defined in ~org-geolink-map-services-user~ and ~org-geolink-map-services~
+
+- Default :: osm
+- In-Buffer Setting :: ~#+GEOLINK_MAP:~ /map-id/
+- Predefined map services ::
+  | ID     |                                               |
+  |--------+-----------------------------------------------|
+  | osm    | Open Street Map                               |
+  | apple  | Apple Maps                                    |
+  | google | Goole Maps                                    |
+  | jgsi   | The Geospatial Information Authority of Japan |
+
+** Variable: ~org-geolink-map-services-user~
+:PROPERTIES:
+:CUSTOM_ID: org-geolink-map-services-user
+:END:
+
+Alist of user defined map services.
+
+- Default :: nil
+- Example ::
+  #+begin_src elisp
+(setq org-geolink-map-services-user
+      '((ex-map-1
+         (name . "Example Map 1")
+         (url . "https://www.example.com/type1/#map={{{z}}}/{{{1}}}/{{{2}}}"))
+        (ex-map-2
+         (name . "Example Map 2")
+         (url . "https://www.example.com/type2/lat={{{1}}}&lng={{{2}}}&z={{{z}}}"))))
+#+end_src
+
+** Variable: ~org-geolink-default-params~
+:PROPERTIES:
+:CUSTOM_ID: org-geolink-default-params
+:END:
+
+Default path parameters alist.
+
+- Default :: '(("z" . "15"))
+- In-Buffer Setting :: ~#+GEOLINK_DEFAULT_PARAMS:~ /key=value;key=value=;.../
+
+* CSS Examples
+
+The following CSS inserts an earth emoji right after the geolink:
+
+#+begin_src css
+a[data-geolink]::after {
+    content: "\1f310";
+}
+#+end_src
