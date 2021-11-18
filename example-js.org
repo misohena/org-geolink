@@ -92,7 +92,7 @@ Org-mode Source: [[https://raw.githubusercontent.com/misohena/org-geolink/master
 </script>
 #+end_export
 
-* Replace Embedded Map
+* Replace with Embedded Map
 :PROPERTIES:
 :CUSTOM_ID: replace-embedded-map
 :END:
@@ -104,7 +104,7 @@ Org-mode Source: [[https://raw.githubusercontent.com/misohena/org-geolink/master
   document.querySelectorAll("div#text-replace-embedded-map a[data-geolink]").forEach((geolink)=>{
     const params = GeoLink.parsePath(geolink.dataset.geolink);
     const mapDiv = document.createElement("div");
-    mapDiv.style = "width:240px; height:240px; z-index:-1;";
+    mapDiv.style = "width:240px; height:240px;";
     geolink.parentNode.insertBefore(mapDiv, geolink);
     geolink.parentNode.removeChild(geolink);
     const map = L.map(mapDiv).setView(
