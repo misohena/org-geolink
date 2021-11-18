@@ -10,8 +10,8 @@ This emacs lisp code adds geo location (latitude / longitude) link type to org-m
 #+end_src
 
 Customize default map service as you like:
-- [[#org-geolink-map-service-default][~org-geolink-map-service-default~]]
-- [[#org-geolink-map-services-user][~org-geolink-map-services-user~]]
+- [[#variable-org-geolink-map-service-default][org-geolink-map-service-default]]
+- [[#variable-org-geolink-map-services-user][org-geolink-map-services-user]]
 
 * Link Notation Examples
 
@@ -43,8 +43,8 @@ Type =C-c C-o= on geo link.
 * Customize HTML Export
 ** Template Notation
 - ~{{{PATH}}}~ :: Original path string.
-- ~{{{CONTENTS}}}~ :: Description of link or result of expanding [[#org-geolink-contents-template][~org-geolink-contents-template~]].
-- ~{{{URL}}}~ :: Result of expanding [[#org-geolink-url-template][~org-geolink-url-template~]].
+- ~{{{CONTENTS}}}~ :: Description of link or result of expanding [[#variable-org-geolink-contents-template][org-geolink-contents-template]].
+- ~{{{URL}}}~ :: Result of expanding [[#variable-org-geolink-url-template][org-geolink-url-template]].
 - ~{{{1}}}~ :: First coordinate number (Latitude).
 - ~{{{2}}}~ :: Second coordinate number (Longitude).
 - ~{{{3}}}~ :: Third coordinate number (Optional).
@@ -53,7 +53,7 @@ Type =C-c C-o= on geo link.
 
 ** Variable: ~org-geolink-html-template~
 :PROPERTIES:
-:CUSTOM_ID: org-geolink-html-template
+:CUSTOM_ID: variable-org-geolink-html-template
 :END:
 
 Template to use when creating a link HTML.
@@ -63,7 +63,7 @@ Template to use when creating a link HTML.
 
 ** Variable: ~org-geolink-contents-template~
 :PROPERTIES:
-:CUSTOM_ID: org-geolink-contents-template
+:CUSTOM_ID: variable-org-geolink-contents-template
 :END:
 
 Link text to use if no description is specified.
@@ -73,7 +73,7 @@ Link text to use if no description is specified.
 
 ** Variable: ~org-geolink-url-template~
 :PROPERTIES:
-:CUSTOM_ID: org-geolink-url-template
+:CUSTOM_ID: variable-org-geolink-url-template
 :END:
 
 Template to use when creating a URL.
@@ -82,14 +82,14 @@ Specify in a format like ~"https://www.openstreetmap.org/#map={{{z}}}/{{{1}}}/{{
 
 nil means to use the default map service.
 
-- Default :: nil (Use ~org-geolink-map-service-default~ )
+- Default :: nil (Use [[#variable-org-geolink-map-service-default][org-geolink-map-service-default]] )
 
 ** Variable: ~org-geolink-map-service-default~
 :PROPERTIES:
-:CUSTOM_ID: org-geolink-map-service-default
+:CUSTOM_ID: variable-org-geolink-map-service-default
 :END:
 
-Default map service. Specify ID symbol defined in ~org-geolink-map-services-user~ and ~org-geolink-map-services~
+Default map service. Specify ID symbol defined in [[#variable-org-geolink-map-services-user][org-geolink-map-services-user]] and ~org-geolink-map-services~
 
 - Default :: osm
 - In-Buffer Setting :: ~#+GEOLINK_MAP:~ /map-id/
@@ -103,7 +103,7 @@ Default map service. Specify ID symbol defined in ~org-geolink-map-services-user
 
 ** Variable: ~org-geolink-map-services-user~
 :PROPERTIES:
-:CUSTOM_ID: org-geolink-map-services-user
+:CUSTOM_ID: variable-org-geolink-map-services-user
 :END:
 
 Alist of user defined map services.
@@ -122,7 +122,7 @@ Alist of user defined map services.
 
 ** Variable: ~org-geolink-default-params~
 :PROPERTIES:
-:CUSTOM_ID: org-geolink-default-params
+:CUSTOM_ID: variable-org-geolink-default-params
 :END:
 
 Default path parameters alist.
