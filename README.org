@@ -139,3 +139,11 @@ a[data-geolink]::after {
     content: "\1f310";
 }
 #+end_src
+
+* JavaScript Examples
+
+See demo page:
+https://misohena.github.io/org-geolink/example-js.org
+
+Org-mode source code:
+https://raw.githubusercontent.com/misohena/org-geolink/master/example-js.org

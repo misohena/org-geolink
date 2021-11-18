@@ -1,0 +1,120 @@
+#+TITLE: Org Geo Link JavaScript Example
+#+OPTIONS: toc:nil timestamp:nil author:nil
+#+HTML_HEAD: <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+#+HTML_HEAD: <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+
+#+begin_export html
+<!-- Geo Link Common -->
+<script>
+const GeoLink = {
+  mapServices: [
+    {name: "Open Street Map", url: "https://www.openstreetmap.org/#map={{{z}}}/{{{1}}}/{{{2}}}"},
+    {name: "Apple Maps", url: "http://maps.apple.com/?ll={{{1}}},{{{2}}}&z={{{z}}}{{{tile:&t=%s}}}"},
+    {name: "Google Maps", url: "https://www.google.com/maps?ll={{{1}}},{{{2}}}&z={{{z}}}{{{tile:&t=%s}}}"},
+    {name: "地理院地図", url: "https://maps.gsi.go.jp/#{{{z}}}/{{{1}}}/{{{2}}}/"},
+  ],
+  parsePath: function(str){
+    const params = str.split(";");
+    const coords = params.shift().split(",");
+    return new Map(
+      [["z", "15"]].concat(
+      coords.map((coord, index)=>[(index+1).toString(), coord]).concat(
+      params.map((param)=>{
+        const pos = param.indexOf("=");
+        return [param.substr(0, pos), param.substr(pos+1)]}))));
+  },
+  expandTemplate: function(template, params){
+    return template.replace(
+      /{{{([^}:]+)(:([^}]+))?}}}/g,
+      (match, p1, p2, p3)=>
+        params.has(p1) ? p3 ? p3.replace("%s", params.get(p1))
+                            : params.get(p1)
+                       : "");
+  }
+};
+</script>
+#+end_export
+
+[[https://github.com/misohena/org-geolink][org-geolink]]
+
+Org-mode Source: [[https://raw.githubusercontent.com/misohena/org-geolink/master/example-js.org]]
+
+* Let Users Choose a Map Service
+:PROPERTIES:
+:CUSTOM_ID: choose-map-service
+:END:
+
+- Default: [[geo:36.2893,137.64785]]
+- z=18: [[geo:36.2893,137.64785;z=18]]
+- Satellite View(Google, Apple?): [[geo:36.2893,137.64785;z=15;tile=h]]
+
+#+begin_export html
+<script>
+  document.querySelectorAll("div#text-choose-map-service a[data-geolink]").forEach((geolink)=>{
+    const params = GeoLink.parsePath(geolink.dataset.geolink);
+    function createMenu(x, y){
+      const menu = document.createElement("div");
+      menu.style = "position: fixed;" +
+        "left:" + x + "px;" +
+        "top:" + y + "px;" +
+        "background-color:white; border:1px solid #888; padding:0.5em;";
+      GeoLink.mapServices.forEach((ms)=>{
+        const url = GeoLink.expandTemplate(ms.url, params);
+        const a = document.createElement("a");
+        a.innerText = ms.name;
+        a.href = GeoLink.expandTemplate(ms.url, params);
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.style = "display: block;"
+        a.onclick = closeMenu;
+        menu.appendChild(a);
+        window.addEventListener("click", onWindowClick, true);
+      });
+      document.body.appendChild(menu);
+
+      function onWindowClick(clickEvent){
+        if(clickEvent.target.parentNode !== menu){
+          clickEvent.preventDefault();
+          clickEvent.stopPropagation();
+          closeMenu();
+        }
+      }
+      function closeMenu(){
+        document.body.removeChild(menu);
+        window.removeEventListener("click", onWindowClick, true);
+      }
+    }
+    geolink.addEventListener("click", (clickEvent)=>{
+      createMenu(clickEvent.clientX, clickEvent.clientY);
+      clickEvent.preventDefault();
+    });
+  });
+</script>
+#+end_export
+
+* Replace Embedded Map
+:PROPERTIES:
+:CUSTOM_ID: replace-embedded-map
+:END:
+
+[[geo:36.2893,137.64785]]
+
+#+begin_export html
+<script>
+  document.querySelectorAll("div#text-replace-embedded-map a[data-geolink]").forEach((geolink)=>{
+    const params = GeoLink.parsePath(geolink.dataset.geolink);
+    const mapDiv = document.createElement("div");
+    mapDiv.style = "width:240px; height:240px; z-index:-1;";
+    geolink.parentNode.insertBefore(mapDiv, geolink);
+    geolink.parentNode.removeChild(geolink);
+    const map = L.map(mapDiv).setView(
+      [parseFloat(params.get("1")), parseFloat(params.get("2"))],
+      parseFloat(params.get("z") || "15"));
+    const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      attribution: '© <a href="http://osm.org/copyright">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+      maxZoom: 19
+    });
+    tileLayer.addTo(map);
+  });
+</script>
+#+end_export
