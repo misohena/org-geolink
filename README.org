@@ -200,3 +200,49 @@ Map [​[geo:36.2893,137.64785;style=map]] or [​[geo:36.2893,137.64785;z=18;st
 
 [​[geo:36.2893,137.64785;z=18;style=map;map-width=400;map-height=300]]
 #+end_src
+
+Header-free HTML template:
+
+#+begin_src elisp
+(defconst my-geolink-html-template-for-map
+  "<script>
+(function(){
+  const currentScript = document.currentScript;
+  function createMap(){
+    const div=document.createElement('div');
+    div.style.width = '{{{map-width}}}px';
+    div.style.height = '{{{map-height}}}px';
+    div.style.display = 'inline-block';
+    currentScript.parentNode.insertBefore(div, currentScript);
+    const map = L.map(div).setView([{{{1}}},{{{2}}}],{{{z}}});
+    const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution: '© <a href=\"http://osm.org/copyright\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>', maxZoom: 19});
+    tileLayer.addTo(map);
+  }
+  if(window.L){
+    createMap();
+  }
+  else{
+    let scr = Array.prototype.find.call(document.head.querySelectorAll('script[src]'), (scr)=>scr.src.includes('leaflet.js'));
+    if(scr){
+      const onloadOld = scr.onload;
+      scr.onload = ()=>{if(onloadOld){onloadOld();} createMap();};
+    }
+    else{
+      const ls = document.createElement('link');
+      ls.rel='stylesheet';
+      ls.href='https://unpkg.com/leaflet@1.7.1/dist/leaflet.css';
+      ls.crossOrigin='';
+      ls.integrity='sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==';
+      document.head.appendChild(ls);
+      scr = document.createElement('script');
+      scr.src = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.js';
+      scr.crossOrigin='';
+      scr.integrity='sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==';
+      scr.onload = createMap;
+      document.head.appendChild(scr);
+    }
+  }
+})();
+</script>
+")
+#+end_src
