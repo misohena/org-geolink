@@ -143,7 +143,7 @@ a[data-geolink]::after {
 * JavaScript Examples
 
 See demo page:
-https://misohena.github.io/org-geolink/example-js.org
+https://misohena.github.io/org-geolink/example-js.html
 
 Org-mode source code:
 https://raw.githubusercontent.com/misohena/org-geolink/master/example-js.org
