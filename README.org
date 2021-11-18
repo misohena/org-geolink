@@ -147,3 +147,56 @@ https://misohena.github.io/org-geolink/example-js.html
 
 Org-mode source code:
 https://raw.githubusercontent.com/misohena/org-geolink/master/example-js.org
+
+* Embedded Map Example
+
+The following example replaces a geolink with an embedded map. Replaces only the links with ~;style=map~ with the Leaflet map. You can also specify ~;map-width=~ and ~;map-height=~.
+
+Settings:
+
+#+begin_src elisp
+(require 'org-geolink)
+
+(defconst my-geolink-html-template-default
+  "<a href=\"{{{URL}}}\" target=\"_blank\" rel=\"noopener\" data-geolink=\"{{{PATH}}}\">{{{CONTENTS}}}</a>")
+
+(defconst my-geolink-html-template-for-map
+  "<script>
+(function(){
+const div=document.createElement('div');
+div.style.width = '{{{map-width}}}px';
+div.style.height = '{{{map-height}}}px';
+div.style.display = 'inline-block';
+document.currentScript.parentNode.insertBefore(div, document.currentScript);
+const map = L.map(div).setView([{{{1}}},{{{2}}}],{{{z}}});
+const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      attribution: '© <a href=\"http://osm.org/copyright\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>',
+      maxZoom: 19
+    });
+tileLayer.addTo(map);
+})();
+</script>
+")
+(setf (alist-get "map-width" org-geolink-default-params nil nil #'equal) "200")
+(setf (alist-get "map-height" org-geolink-default-params nil nil #'equal) "200")
+
+(defun my-geolink-html-template (params)
+  (if (equal (cdr (assoc "style" params)) "map")
+      (org-geolink-expand-template my-geolink-html-template-for-map params)
+    (org-geolink-expand-template my-geolink-html-template-default params)))
+
+(setq org-geolink-html-template #'my-geolink-html-template)
+#+end_src
+
+Org-mode source:
+
+#+begin_src org
+#+HTML_HEAD: <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+#+HTML_HEAD: <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+
+Normal Link: [​[geo:36.2893,137.64785][Oku-hotaka-dake]]
+
+Map [​[geo:36.2893,137.64785;style=map]] or [​[geo:36.2893,137.64785;z=18;style=map]]
+
+[​[geo:36.2893,137.64785;z=18;style=map;map-width=400;map-height=300]]
+#+end_src
