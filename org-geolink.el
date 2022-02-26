@@ -36,7 +36,9 @@
 
 (require 'subr-x)
 (require 'org)
-(require 'ox)
+
+(eval-when-compile
+  (require 'ox))
 
 ;;;; Variables
 
