@@ -91,7 +91,8 @@
 (defcustom org-geolink-map-service-default 'osm
   "Default map service ID.
 
-Specify ID symbol defined in `org-geolink-map-services-user' and `org-geolink-map-services'"
+Specify ID symbol defined in `org-geolink-map-services-user' and
+`org-geolink-map-services'"
   :group 'org-geolink
   :type (cons 'choice
               (mapcar (lambda (mp)
@@ -138,7 +139,9 @@ nil means to use the default map service."
   "Split PATH components and return as alist.
 
 e.g.
-\(org-geolink-parse \"111,-222,33;a=A;b=B\") => ((\"1\" . \"111\") (\"2\" . \"-222\") (\"3\" . \"33\") (\"a\" . \"A\") (\"b\" . \"B\"))"
+\(org-geolink-parse \"111,-222,33;a=A;b=B\") =>
+ ((\"1\" . \"111\") (\"2\" . \"-222\") (\"3\" . \"33\")
+  (\"a\" . \"A\") (\"b\" . \"B\"))"
   (let (result
         (num-coords 0)
         (pos 0))
