@@ -133,6 +133,19 @@ nil means to use the default map service."
   :group 'org-geolink
   :type '(string))
 
+(defcustom org-geolink-follow-function #'org-geolink-open-by-web-service
+  "Function to use when opening geo: type links in Org-mode."
+  :group 'org-geolink
+  :type '(choice (const :tag "Use default map service"
+                        org-geolink-open-by-web-service)
+                 (const :tag "Choose every time"
+                        org-geolink-open-by-selected-web-service)
+                 (const :tag "Use `browse-url' function"
+                        org-geolink-open-by-browse-url)
+                 (const :tag "Use osm.el"
+                        org-geolink-open-by-osm-el)
+                 (function :tag "Any function")))
+
 ;;;; Parse Link Path
 
 (defun org-geolink-parse (path)
@@ -335,20 +348,79 @@ If there is no value, return DEFAULT."
 ;;;; Open
 
 (defun org-geolink-open (path &optional _arg)
-  "Open PATH by browser."
+  "Open PATH."
+  (org-geolink-open-by-web-service path))
+
+(defun org-geolink-open-by-web-service (path &optional _arg)
+  "Open PATH by map web service.
+
+Use the service specified by `org-geolink-map-service-default'."
   (interactive)
   (browse-url (org-geolink-to-url path)))
 
+(defun org-geolink-open-by-selected-web-service (path &optional _arg)
+  "Select map web service and open PATH with it.
+
+Let the user choose one of the services in
+`org-geolink-map-services' or `org-geolink-map-services-user' and
+use it."
+  (interactive)
+  (let* ((prompt (format "Service (default %s): "
+                         org-geolink-map-service-default))
+         (candidates (mapcar (lambda (s) (symbol-name (car s)))
+                             (append org-geolink-map-services
+                                     org-geolink-map-services-user)))
+         (map-id-str (completing-read prompt candidates nil t))
+         (map-id (if (string-empty-p map-id-str)
+                     org-geolink-map-service-default
+                   (intern map-id-str))))
+    (browse-url (org-geolink-to-url path map-id))))
+
+(defun org-geolink-open-by-browse-url (path &optional _arg)
+  "Open PATH by browse URL handler."
+  (browse-url (concat "geo:" path)))
+
 ;;;; Link Type
+
+(defun org-geolink-follow (&rest args)
+  (apply org-geolink-follow-function args))
 
 (defun org-geolink-define-link-type ()
   "Add link type to `org-mode'."
   (org-link-set-parameters
    org-geolink-link-type
    :export #'org-geolink-export
-   :follow #'org-geolink-open))
+   :follow #'org-geolink-follow))
 
 (org-geolink-define-link-type)
+
+;;;; osm.el
+
+(defun org-geolink-open-by-osm-el (path &optional _arg)
+  "Open PATH by osm.el."
+  (if (fboundp 'osm)
+      (osm (concat "geo:" path))
+    (error "Function `osm' not found")))
+
+(defun org-geolink-open-osm-el-location-by-selected-web-service ()
+  "Opens the location displayed in the osm buffer with a web
+service selected by the user.
+
+For example, set as follows.
+(with-eval-after-load 'osm
+  (define-key osm-mode-map (kbd \"O\")
+    #'org-geolink-open-osm-el-location-by-selected-web-service))"
+  (interactive)
+
+  ;; osm.el
+  (declare-function osm--barf-unless-osm "osm")
+  (defvar osm--lat)
+  (defvar osm--lon)
+  (defvar osm--zoom)
+
+  (osm--barf-unless-osm)
+  (let ((path (format "%.6f,%.6f;z=%s" osm--lat osm--lon osm--zoom)))
+    (org-geolink-open-by-selected-web-service path)))
 
 (provide 'org-geolink)
 ;;; org-geolink.el ends here
