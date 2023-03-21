@@ -48,6 +48,16 @@ More Examples:
 * Open Link by Browser
 Type =C-c C-o= on geo link.
 
+The variable ~org-geolink-follow-function~ allows you to customize how locations are opened. In addition to the web browser, you can also open a location using the browse-url geo protocol handler or osm.el.
+
+If you are using osm.el, you can open the location currently displayed in the osm buffer with a map service registered with org-geolink.
+
+#+begin_src elisp
+(with-eval-after-load 'osm
+  (define-key osm-mode-map (kbd \"O\")
+    #'org-geolink-open-osm-el-location-by-selected-web-service))
+#+end_src
+
 * Customize HTML Export
 ** Template Notation
 - ~{{{PATH}}}~ :: Original path string.
