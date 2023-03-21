@@ -2,6 +2,14 @@
 
 This emacs lisp code adds geo location (latitude / longitude) link type to org-mode.
 
+Geo location links can be opened with any web service or osm.el.
+
+Also, you can freely customize the results when exporting geo location links.
+
+Example of export results:
+
+https://misohena.github.io/org-geolink/example-js.html
+
 * Setup
 
 #+begin_src elisp
