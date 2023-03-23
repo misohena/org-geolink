@@ -385,12 +385,18 @@ use it."
 (defun org-geolink-follow (&rest args)
   (apply org-geolink-follow-function args))
 
+(defun org-geolink-store ()
+  (when (and (derived-mode-p 'osm-mode)
+             (fboundp 'osm--org-link-props))
+    (apply #'org-link-store-props (osm--org-link-props))))
+
 (defun org-geolink-define-link-type ()
   "Add link type to `org-mode'."
   (org-link-set-parameters
    org-geolink-link-type
    :export #'org-geolink-export
-   :follow #'org-geolink-follow))
+   :follow #'org-geolink-follow
+   :store #'org-geolink-store))
 
 (org-geolink-define-link-type)
 
