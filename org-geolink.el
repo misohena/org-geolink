@@ -413,9 +413,9 @@ use it."
 service selected by the user.
 
 For example, set as follows.
-(with-eval-after-load 'osm
+(with-eval-after-load \\='osm
   (define-key osm-mode-map (kbd \"O\")
-    #'org-geolink-open-osm-el-location-by-selected-web-service))"
+    #\\='org-geolink-open-osm-el-location-by-selected-web-service))"
   (interactive)
 
   ;; osm.el
