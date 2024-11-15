@@ -14,7 +14,7 @@ const GeoLink = {
     {name: "地理院地図", url: "https://maps.gsi.go.jp/#{{{z}}}/{{{1}}}/{{{2}}}/"},
   ],
   parsePath: function(str){
-    const params = str.split(";");
+    const params = str.split(/[?;&]/);
     const coords = params.shift().split(",");
     return new Map(
       [["z", "15"]].concat(
@@ -45,8 +45,8 @@ Org-mode Source: [[https://raw.githubusercontent.com/misohena/org-geolink/master
 :END:
 
 - Default: [[geo:36.2893,137.64785]]
-- z=18: [[geo:36.2893,137.64785;z=18]]
-- Satellite View(Google, Apple?): [[geo:36.2893,137.64785;z=15;tile=h]]
+- z=18: [[geo:36.2893,137.64785?z=18]]
+- Satellite View(Google, Apple?): [[geo:36.2893,137.64785?z=15&tile=h]]
 
 #+begin_export html
 <script>

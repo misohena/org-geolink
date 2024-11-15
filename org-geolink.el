@@ -28,9 +28,9 @@
 
 ;; Notation:
 ;; [​[geo:36.2893,137.64785]]
-;; [​[geo:36.2893,137.64785;z=18]]
+;; [​[geo:36.2893,137.64785?z=18]]
 ;; [​[geo:36.2893,137.64785][Oku-hotaka-dake]]
-;; [​[geo:36.2893,137.64785;z=15;tile=k]]
+;; [​[geo:36.2893,137.64785?z=15&tile=k]]
 
 ;;; Code:
 
@@ -148,6 +148,19 @@ nil means to use the default map service."
 
 ;;;; Parse Link Path
 
+(defcustom org-geolink-known-parameters
+  '("crs" "u")
+  "Parameters defined in RFC5870."
+  :group 'org-geolink
+  :type '(repeat string))
+
+(defcustom org-geolink-ignore-unknown-parameters
+  nil
+  "Non-nil means to ignore parameters not listed in
+`org-geolink-known-parameters'."
+  :group 'org-geolink
+  :type 'boolean)
+
 (defun org-geolink-parse (path)
   "Split PATH components and return as alist.
 
@@ -159,25 +172,43 @@ e.g.
         (num-coords 0)
         (pos 0))
     ;; Coordinates (e.g. 123.45,-234.56,14)
-    (while (eq pos
-               (string-match
-                (concat
-                 (if (> pos 0) "," "")
-                 " *\\([-+]?[0-9]+\\(?:\\.[0-9]*\\)?\\) *")
-                path pos))
-      (setq num-coords (1+ num-coords))
-      (push (cons (format "%d" num-coords)
-                  (match-string 1 path))
-            result)
-      (setq pos (match-end 0)))
+    (while (progn
+             (string-match
+              (concat
+               (if (> pos 0) "," "")
+               " *\\([-+]?[0-9]+\\(?:\\.[0-9]*\\)?\\) *\\|")
+              path pos)
+             (match-beginning 1))
+      (setq pos (match-end 0)
+            num-coords (1+ num-coords))
+      (push (cons (format "%d" num-coords) (match-string 1 path)) result))
 
     ;; Parameters (e.g. ;a=1;b=2)
-    (while (eq pos
-               (string-match "; *\\([0-9a-zA-Z-]*\\) *=\\([^;]+\\)" path pos))
-      (push (cons (downcase (match-string 1 path));;ignore case
-                  (match-string 2 path))
-            result)
-      (setq pos (match-end 0)))
+    (while (progn
+             (string-match "; *\\([0-9a-zA-Z-]*\\) *=\\([^;?#]+\\)\\|" path pos)
+             (match-beginning 1))
+      (setq pos (match-end 0))
+      (let ((param-name (downcase (match-string 1 path)));;ignore case
+            (param-value (match-string 2 path)))
+        (when (or (not org-geolink-ignore-unknown-parameters)
+                  (member param-name org-geolink-known-parameters))
+          (push (cons param-name param-value) result))))
+
+    ;; Query (e.g. ?c=3;d=4&e=5)
+    (when (and (< pos (length path)) (= (aref path pos) ??))
+      (setq pos (1+ pos))
+      (while (progn
+               (string-match
+                "\\(\\(?:\\([^#;&=]+\\)\\(?:=\\([^#;&]*\\)\\)?[;&]?\\)\\|[;&]\\)\\|"
+                path pos)
+               (match-beginning 1))
+        (setq pos (match-end 0))
+        (when (match-beginning 2)
+          (push (cons (url-unhex-string (match-string 2 path))
+                      (url-unhex-string (or (match-string 3 path) "")))
+                result))))
+
+    ;; TODO: Support fragment part (after #)
 
     ;; Syntax Check and Return Result
     (if (and (<= 2 num-coords 3) ;;2 or 3 coordinates
@@ -185,6 +216,15 @@ e.g.
         (nreverse result)
       (message "Invalid geo link: %s" path)
       nil)))
+;; TEST: (org-geolink-parse "111.234,-222.345") => (("1" . "111.234") ("2" . "-222.345"))
+;; TEST: (org-geolink-parse "323482,4306480;crs=EPSG:32618;u=20") => (("1" . "323482") ("2" . "4306480") ("crs" . "EPSG:32618") ("u" . "20"))
+;; TEST: (let ((org-geolink-ignore-unknown-parameters nil)) (org-geolink-parse "111,-222,33;a=A;b=B")) => (("1" . "111") ("2" . "-222") ("3" . "33") ("a" . "A") ("b" . "B"))
+;; TEST: (let ((org-geolink-ignore-unknown-parameters nil)) (org-geolink-parse "111,-222,33;a=A;b=B?")) => (("1" . "111") ("2" . "-222") ("3" . "33") ("a" . "A") ("b" . "B"))
+;; TEST: (let ((org-geolink-ignore-unknown-parameters nil)) (org-geolink-parse "111,-222,33;a=A;b=B?ccc")) => (("1" . "111") ("2" . "-222") ("3" . "33") ("a" . "A") ("b" . "B") ("ccc" . ""))
+;; TEST: (let ((org-geolink-ignore-unknown-parameters nil)) (org-geolink-parse "111,-222,33;a=A;b=B?ccc=")) => (("1" . "111") ("2" . "-222") ("3" . "33") ("a" . "A") ("b" . "B") ("ccc" . ""))
+;; TEST: (let ((org-geolink-ignore-unknown-parameters nil)) (org-geolink-parse "111,-222,33;a=A;b=B?ccc=;d=555%20666")) => (("1" . "111") ("2" . "-222") ("3" . "33") ("a" . "A") ("b" . "B") ("ccc" . "") ("d" . "555 666"))
+;; TEST: (let ((org-geolink-ignore-unknown-parameters nil)) (org-geolink-parse "111,-222,33;a=A;b=B?ccc=;d=555%20666&&;;e=77")) => (("1" . "111") ("2" . "-222") ("3" . "33") ("a" . "A") ("b" . "B") ("ccc" . "") ("d" . "555 666") ("e" . "77"))
+;; TEST: (let ((org-geolink-ignore-unknown-parameters t)) (org-geolink-parse "111,-222,33;crs=EPSG:32618;u=20;a=A;b=B?ccc=;d=555%20666&&;;e=77")) => (("1" . "111") ("2" . "-222") ("3" . "33") ("crs" . "EPSG:32618") ("u" . "20") ("ccc" . "") ("d" . "555 666") ("e" . "77"))
 
 (defun org-geolink-param-get (key params)
   "Return the value of the KEY parameter in PARAMS."
@@ -326,7 +366,7 @@ If there is no value, return DEFAULT."
               (cons
                (match-string 1 param)
                (match-string 2 param))))
-          (split-string value ";" t " *")))
+          (split-string value "[;&]" t " *")))
       value)))
 
 (defun org-geolink-install-geolink-options-to-html-backend ()
@@ -405,7 +445,14 @@ use it."
 (defun org-geolink-open-by-osm-el (path &optional _arg)
   "Open PATH by osm.el."
   (if (fboundp 'osm)
-      (osm (concat "geo:" path))
+      (let* ((params (org-geolink-parse path))
+             (lat (cdr (assoc "1" params)))
+             (lon (cdr (assoc "2" params)))
+             (zoom (cdr (assoc "z" params))))
+        (when (and lat lon)
+          (osm (string-to-number lat)
+               (string-to-number lon)
+               (when zoom (string-to-number zoom)))))
     (error "Function `osm' not found")))
 
 (defun org-geolink-open-osm-el-location-by-selected-web-service ()
@@ -425,7 +472,7 @@ For example, set as follows.
   (defvar osm--zoom)
 
   (osm--barf-unless-osm)
-  (let ((path (format "%.6f,%.6f;z=%s" osm--lat osm--lon osm--zoom)))
+  (let ((path (format "%.6f,%.6f?z=%s" osm--lat osm--lon osm--zoom)))
     (org-geolink-open-by-selected-web-service path)))
 
 (provide 'org-geolink)

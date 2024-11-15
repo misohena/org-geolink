@@ -2,7 +2,7 @@
 #+GEOLINK_MAP: apple
 #+GEOLINK_HTML_TEMPLATE: [<a href="{{{URL}}}" target="_blank" rel="noopener" data-geolink="{{{PATH}}}">{{{CONTENTS}}}</a>]
 #+GEOLINK_CONTENTS_TEMPLATE: (path:{{{PATH}}})
-#+GEOLINK_DEFAULT_PARAMS: z=12;tile=p
+#+GEOLINK_DEFAULT_PARAMS: z=12&tile=p
 
 使用例です。
 
@@ -10,12 +10,12 @@
 
 [[geo:36.2893,137.64785]]
 
-[[geo:36.2893,137.64785;z=18]]
+[[geo:36.2893,137.64785?z=18]]
 
-[[geo:36.2893,137.64785;z=15;tile=h]]
+[[geo:36.2893,137.64785?z=15&tile=h]]
 
-[[geo:36.2893,137.64785;z=15;tile=k]]
+[[geo:36.2893,137.64785?z=15&tile=k]]
 
-[[geo:36.2893,137.64785;z=15;tile=m]]
+[[geo:36.2893,137.64785?z=15&tile=m]]
 
-[[geo:36.2893,137.64785;z=15;tile=p]]
+[[geo:36.2893,137.64785?z=15&tile=p]]

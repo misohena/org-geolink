@@ -25,7 +25,7 @@ Customize default map service as you like:
 
 #+begin_src org
 - [​[geo:36.2893,137.64785]]
-- [​[geo:36.2893,137.64785;z=18]]
+- [​[geo:36.2893,137.64785?z=18]]
 - [​[geo:36.2893,137.64785][Oku-hotaka-dake]]
 #+end_src
 
@@ -34,7 +34,7 @@ When exporting as HTML, the output is as follows:
 #+begin_src html
 <ul class="org-ul">
 <li><a href="https://www.openstreetmap.org/#map=15/36.2893/137.64785" target="_blank" rel="noopener" data-geolink="36.2893,137.64785">36.2893,137.64785</a></li>
-<li><a href="https://www.openstreetmap.org/#map=18/36.2893/137.64785" target="_blank" rel="noopener" data-geolink="36.2893,137.64785;z=18">36.2893,137.64785</a></li>
+<li><a href="https://www.openstreetmap.org/#map=18/36.2893/137.64785" target="_blank" rel="noopener" data-geolink="36.2893,137.64785?z=18">36.2893,137.64785</a></li>
 <li><a href="https://www.openstreetmap.org/#map=15/36.2893/137.64785" target="_blank" rel="noopener" data-geolink="36.2893,137.64785">Oku-hotaka-dake</a></li>
 </ul>
 #+end_src
@@ -214,9 +214,9 @@ Org-mode source:
 
 Normal Link: [​[geo:36.2893,137.64785][Oku-hotaka-dake]]
 
-Map [​[geo:36.2893,137.64785;style=map]] or [​[geo:36.2893,137.64785;z=18;style=map]]
+Map [​[geo:36.2893,137.64785?style=map]] or [​[geo:36.2893,137.64785?z=18&style=map]]
 
-[​[geo:36.2893,137.64785;z=18;style=map;map-width=400;map-height=300]]
+[​[geo:36.2893,137.64785?z=18&style=map&map-width=400&map-height=300]]
 #+end_src
 
 Header-free HTML template:
