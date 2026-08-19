@@ -296,7 +296,7 @@ Use the URL template of the map service corresponding to the MAP-ID."
 
 (defun org-geolink-export-as-html (path description _info)
   "Convert geo link PATH, DESCRIPTION and INFO to HTML."
-  (when-let ((params (org-geolink-parse path)))
+  (when-let* ((params (org-geolink-parse path)))
     (push (cons "PATH" path) params)
     (push (cons "URL" (org-geolink-to-url params)) params)
     (push (cons "CONTENTS"
